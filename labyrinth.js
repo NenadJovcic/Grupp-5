@@ -1,6 +1,73 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
+let map1 = [
+  `##############################`,
+  `_.....................########`,
+  `##########..########..########`,
+  `##########..#......#.........#`,
+  `#...........#..##..########..#`,
+  `#..#######..#..##..########..#`,
+  `#..#....##..#..##..####......#`,
+  `#..###..#####..##.....########`,
+  `#...............####........!#`,
+  `##############################`,
+];
+
+let map2 = [
+  `##############################`,
+  `_....###..........#........###`,
+  `###..###..###..####..####..###`,
+  `###.......###..#.....####..###`,
+  `#############..####..#.......#`,
+  `#..............####..#..###..#`,
+  `#..################..#..###..#`,
+  `#..##........######..#....#..#`,
+  `#..##..####..#.......######..#`,
+  `#......####..#..###.......#..#`,
+  `###########..#..###########..#`,
+  `#............#..#.......##...#`,
+  `#..###########..#..###..##..##`,
+  `#..................###..#...!#`,
+  `##############################`,
+];
+
+let map3 = [
+  `#############################################################`, //index 4
+  `_.........#.....................#.....................#######`,
+  `########..##...#######..######..#..#################........#`,
+  `##.....#..###..##............#..##########..##############..#`,
+  `##..#.......#..##..#..#####..#..........................##..#`,
+  `##..#########..##..####..#########..#############..#######..#`,
+  `##..#..........##...............................#..#######..#`,
+  `##..#..######..################..################...........#`,
+  `##..#.......#..#................................##########..#`,
+  `##..#########..######..###########..######################..#`,
+  `##.............#............#..........#.............#......#`,
+  `#############..######..######..#..########..###..#####..##..#`,
+  `######..#########..##########..#######..##...............#..#`,
+  `#.......................................##..#################`,
+  `##########################################..#..............##`,
+  `#.......#...................................###..########..##`,
+  `#########..####################################..#......#..##`,
+  `#.......#..#........#........................##..#..#####..##`,
+  `#########..#..####..#..####################..##..#.........##`,
+  `#.......#..#.....#..#..#..................#..##..############`,
+  `#########..#######..#..#..##############..#..##..#..........#`,
+  `#..........#...........#..#......#.....#..#..##.....######..#`,
+  `#..##################..#..#..##..#..#..#..#..##########..#..#`,
+  `#..#...................#..#..##..#..#..#..#..............#..#`,
+  `#..########..########..#..#####..#..#..#..##########..#..#..#`,
+  `#..#.........#.........#.........#..#..#..............#..#..#`,
+  `#..#..############################..#..################..#..#`,
+  `#..#.............#....##............#....................#..#`,
+  `#..############..###..##..################################..#`,
+  `#.....................##...................................!#`,
+  `#############################################################`
+];
+let singleBlock
+let maps = [map1, map2, map3]
+let currentMap = 0
 class Entity {
   constructor(position, width, height, color) {
     this.position = position;
@@ -31,7 +98,7 @@ class Player extends Entity {
   constructor(position, width, height, color) {
     super(position, width, height, color);
 
-    this.speed = 250;
+    this.speed = 700;
     this.up = false;
     this.down = false;
     this.left = false;
@@ -91,7 +158,7 @@ class Player extends Entity {
   }
 }
 
-let player = new Player(new Position(20, 90), 25, 25, "black");
+let player = new Player(new Position(40, 80), 20 , 20, "black");
 
 function checkCollision(player, blocks) {
   for (let i = 0; i < blocks.length; i++) {
@@ -100,7 +167,7 @@ function checkCollision(player, blocks) {
       block.position.x < player.position.x + player.width &&
       block.position.x + block.width > player.position.x &&
       block.position.y < player.position.y + player.height &&
-      block.height + block.position.y > player.position.y && block.color !== "green"
+      block.height + block.position.y > player.position.y && block.color !== "green" && "yellow"
     ) {
       return block;
     }
@@ -110,13 +177,17 @@ function checkCollision(player, blocks) {
       block.position.y < player.position.y + player.height &&
       block.height + block.position.y > player.position.y && block.color == "green"
     ) {
-      player.position.x = 20
-      player.position.y = 90
+      ++currentMap
+      entities = createLabyrinth(maps[currentMap]);
+      player.position.x = 40
+      player.position.y = 50
+      player.height = singleBlock.height - 20;
+      player.width = singleBlock.width - 15;
       player.right = false;
       player.up = false;
       player.down = false;
       player.left = false;
-      alert("you won")
+      
     }
     
   }
@@ -152,24 +223,12 @@ function handleKeyUp(event) {
 window.addEventListener("keypress", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 
-const map = [
-  `##############################`,
-  `_.....................########`,
-  `##########..########..########`,
-  `##########..#......#.........#`,
-  `#...........#..##..########..#`,
-  `#..#######..#..##..########..#`,
-  `#..#....##..#..##..####......#`,
-  `#..###..#####..##.....########`,
-  `#...............####........!#`,
-  `##############################`,
-];
 
-let entities = createLabyrinth(map);
+let entities = createLabyrinth(maps[0]);
 
 function createLabyrinth(template) {
   let blocks = [];
-  
+
 
   for (let y = 0; y < template.length; y++) {
     let row = template[y];
@@ -190,6 +249,15 @@ function createLabyrinth(template) {
         let block1 = new Entity(position, width, height, "green");
         blocks.push(block1);
        
+      }
+      if (char === "_") {
+        let width = canvas.width / row.length;
+        let height = canvas.height / template.length;
+        let position = { x: x * width, y: y * height };
+        let block2 = new Entity(position, width, height, "yellow");
+        singleBlock = {height: block2.height, width: block2.width}
+        blocks.push(block2)
+        
       }
     }
   }
@@ -219,7 +287,6 @@ function tick() {
     entity.draw();
 
   }
-
   requestAnimationFrame(tick);
 }
 tick();
